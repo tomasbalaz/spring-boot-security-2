@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
+import static sk.balaz.springbootsecurity.security.ApplicationRole.STUDENT;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -21,8 +23,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/index.html")
-                                .permitAll()
+                        auth.requestMatchers("/index.html").permitAll()
+                                .requestMatchers("/api/**").hasAnyRole(STUDENT.name())
                                 .anyRequest()
                                 .authenticated())
                 .httpBasic(Customizer.withDefaults());
@@ -34,7 +36,7 @@ public class SecurityConfig {
         UserDetails anna = User.builder()
                 .username("anna")
                 .password(passwordEncoder.encode("password"))
-                .roles(ApplicationRole.STUDENT.name())
+                .roles(STUDENT.name())
                 .build();
 
         UserDetails linda = User.builder()
