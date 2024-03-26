@@ -36,13 +36,19 @@ public class SecurityConfig {
         UserDetails anna = User.builder()
                 .username("anna")
                 .password(passwordEncoder.encode("password"))
-                .roles(STUDENT.name())
+                .roles(STUDENT.name()) //ROLE_STUDENT
                 .build();
 
         UserDetails linda = User.builder()
                 .username("linda")
                 .password(passwordEncoder.encode("password123"))
-                .roles(ApplicationRole.ADMIN.name())
+                .roles(ApplicationRole.ADMIN.name()) //ROLE_ADMIN
+                .build();
+
+        UserDetails tom = User.builder()
+                .username("tom")
+                .password(passwordEncoder.encode("password123"))
+                .roles(ApplicationRole.ADMIN_TRAINEE.name()) //ROLE_ADMIN_TRAINEE
                 .build();
 
         return new InMemoryUserDetailsManager(anna, linda);
