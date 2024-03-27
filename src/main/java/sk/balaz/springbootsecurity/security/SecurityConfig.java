@@ -29,9 +29,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/index.html").permitAll()
                                 .requestMatchers("/api/**").hasAnyRole(STUDENT.name())
-                                .requestMatchers(HttpMethod.DELETE,"management/api/**").hasAuthority(COURSE_WRITE.name())
-                                .requestMatchers(HttpMethod.POST,"management/api/**").hasAuthority(COURSE_WRITE.name())
-                                .requestMatchers(HttpMethod.PUT,"management/api/**").hasAuthority(COURSE_WRITE.name())
+                                .requestMatchers(HttpMethod.DELETE,"management/api/**").hasAuthority(COURSE_WRITE.getPermission())
+                                .requestMatchers(HttpMethod.POST,"management/api/**").hasAuthority(COURSE_WRITE.getPermission())
+                                .requestMatchers(HttpMethod.PUT,"management/api/**").hasAuthority(COURSE_WRITE.getPermission())
                                 .requestMatchers(HttpMethod.GET, "management/api/**").hasAnyRole(ADMIN.name(), ADMIN_TRAINEE.name())
                                 .anyRequest()
                                 .authenticated())
