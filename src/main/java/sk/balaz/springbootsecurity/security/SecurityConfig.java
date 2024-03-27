@@ -44,19 +44,22 @@ public class SecurityConfig {
         UserDetails anna = User.builder()
                 .username("anna")
                 .password(passwordEncoder.encode("password"))
-                .roles(STUDENT.name()) //ROLE_STUDENT
+//                .roles(STUDENT.name()) //ROLE_STUDENT
+                .authorities(STUDENT.getAuthorities())
                 .build();
 
         UserDetails linda = User.builder()
                 .username("linda")
                 .password(passwordEncoder.encode("password123"))
-                .roles(ADMIN.name()) //ROLE_ADMIN
+//                .roles(ADMIN.name()) //ROLE_ADMIN
+                .authorities(ADMIN.getAuthorities())
                 .build();
 
         UserDetails tom = User.builder()
                 .username("tom")
                 .password(passwordEncoder.encode("password123"))
-                .roles(ADMIN_TRAINEE.name()) //ROLE_ADMIN_TRAINEE
+//                .roles(ADMIN_TRAINEE.name()) //ROLE_ADMIN_TRAINEE
+                .authorities(ADMIN_TRAINEE.getAuthorities())
                 .build();
 
         return new InMemoryUserDetailsManager(anna, linda, tom);
