@@ -2,17 +2,20 @@ package sk.balaz.springbootsecurity.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import sk.balaz.springbootsecurity.auth.ApplicationUserDao;
+import sk.balaz.springbootsecurity.auth.ApplicationUserService;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 import static sk.balaz.springbootsecurity.security.ApplicationRole.*;
@@ -36,29 +39,23 @@ public class SecurityConfig {
     }
 
     @Bean
-    UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-        UserDetails anna = User.builder()
-                .username("anna")
-                .password(passwordEncoder.encode("password"))
-//                .roles(STUDENT.name()) //ROLE_STUDENT
-                .authorities(STUDENT.getAuthorities())
-                .build();
+    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
+                                                            PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
 
-        UserDetails linda = User.builder()
-                .username("linda")
-                .password(passwordEncoder.encode("password123"))
-//                .roles(ADMIN.name()) //ROLE_ADMIN
-                .authorities(ADMIN.getAuthorities())
-                .build();
+        return provider;
+    }
 
-        UserDetails tom = User.builder()
-                .username("tom")
-                .password(passwordEncoder.encode("password123"))
-//                .roles(ADMIN_TRAINEE.name()) //ROLE_ADMIN_TRAINEE
-                .authorities(ADMIN_TRAINEE.getAuthorities())
-                .build();
+    @Bean
+    AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
 
-        return new InMemoryUserDetailsManager(anna, linda, tom);
+    @Bean
+    public UserDetailsService userDetailsService(ApplicationUserDao applicationUserDao) {
+        return new ApplicationUserService(applicationUserDao);
     }
 
     @Bean
