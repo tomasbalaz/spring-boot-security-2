@@ -1,6 +1,10 @@
 package sk.balaz.springbootsecurity.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +15,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
+import java.util.Date;
 
 @RequiredArgsConstructor
 public class JwtUserNameAndPasswordAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -32,5 +37,23 @@ public class JwtUserNameAndPasswordAuthenticationFilter extends UsernamePassword
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    protected void successfulAuthentication(HttpServletRequest request,
+                                            HttpServletResponse response,
+                                            FilterChain chain,
+                                            Authentication authResult) throws IOException, ServletException {
+
+        String token = Jwts.builder()
+                .subject(authResult.getName())
+                .claim("authorities", authResult.getAuthorities())
+                .issuedAt(new Date())
+                .signWith(Keys.hmacShaKeyFor("secure".getBytes()))
+                .compact();
+
+        response.addHeader("Authorization", "Bearer " + token);
+
+        super.successfulAuthentication(request, response, chain, authResult);
     }
 }
