@@ -9,13 +9,15 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import sk.balaz.springbootsecurity.auth.ApplicationUserDao;
 import sk.balaz.springbootsecurity.auth.ApplicationUserService;
+import sk.balaz.springbootsecurity.jwt.JwtUserNameAndPasswordAuthenticationFilter;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 import static sk.balaz.springbootsecurity.security.ApplicationRole.*;
@@ -28,13 +30,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .addFilter(new JwtUserNameAndPasswordAuthenticationFilter(authenticationManager()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/index.html").permitAll()
                                 .requestMatchers("/api/**").hasAnyRole(STUDENT.name())
                                 .anyRequest()
-                                .authenticated())
-                .formLogin(form -> withDefaults());
+                                .authenticated());
+               // .formLogin(form -> withDefaults());
         return http.build();
     }
 
@@ -49,8 +53,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    AuthenticationManager authenticationManager() throws Exception {
+        return authenticationConfiguration().getAuthenticationManager();
+    }
+
+    @Bean
+    AuthenticationConfiguration authenticationConfiguration() {
+        return new AuthenticationConfiguration();
     }
 
     @Bean
