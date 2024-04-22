@@ -1,5 +1,6 @@
 package sk.balaz.springbootsecurity.security;
 
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,20 +20,28 @@ import sk.balaz.springbootsecurity.auth.ApplicationUserDao;
 import sk.balaz.springbootsecurity.auth.ApplicationUserService;
 import sk.balaz.springbootsecurity.jwt.JwtTokenVerifier;
 import sk.balaz.springbootsecurity.jwt.JwtUserNameAndPasswordAuthenticationFilter;
+import sk.balaz.springbootsecurity.jwt.config.JwtConfig;
+
+import javax.crypto.SecretKey;
 
 import static sk.balaz.springbootsecurity.security.ApplicationRole.*;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@AllArgsConstructor
 public class SecurityConfig {
+
+    private final JwtConfig jwtConfig;
+
+    private final SecretKey secretKey;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .addFilter(new JwtUserNameAndPasswordAuthenticationFilter(authenticationManager()))
-                .addFilterAfter(new JwtTokenVerifier(), JwtUserNameAndPasswordAuthenticationFilter.class)
+                .addFilter(new JwtUserNameAndPasswordAuthenticationFilter(authenticationManager(), jwtConfig, secretKey))
+                .addFilterAfter(new JwtTokenVerifier(jwtConfig, secretKey), JwtUserNameAndPasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/index.html").permitAll()

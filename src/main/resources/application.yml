@@ -1,3 +1,10 @@
 spring:
     application:
         name: spring-boot-security-2
+
+application:
+    jwt:
+        secretKey: "securesecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecuresecure"
+        authHeader: Authorization
+        tokenPrefix: Bearer
+        tokenExpirationAfterDays : 14
